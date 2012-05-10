@@ -1,0 +1,172 @@
+:javascript
+ var oTable;
+ var nEditing = null;
+ $(document).ready( function() {
+    oTable = $('#taskTable').dataTable( {
+        "aaSorting": [[ 3, "desc" ], [ 0, "desc" ]]
+    });
+
+    $('#addNewButton').click(function() {
+     fnClickAddRow();
+    });
+
+ $('#taskTable a.edit').live('click', function (e) {
+        e.preventDefault();
+
+        /* Get the row as a parent of the link that was clicked on */
+        var nRow = $(this).parents('tr')[0];
+
+        if ( nEditing !== null && nEditing != nRow ) {
+            /* A different row is being edited - the edit should be cancelled and this row edited */
+            restoreRow( oTable, nEditing );
+            editRow( oTable, nRow );
+            nEditing = nRow;
+        }
+        else if ( nEditing == nRow && this.innerHTML == "Save" ) {
+            /* This row is being edited and should be saved */
+            saveRow( oTable, nEditing );
+            nEditing = null;
+        }
+        else {
+            /* No row currently being edited */
+            editRow( oTable, nRow );
+            nEditing = nRow;
+        }
+    } );
+
+ });
+
+ function editRow ( oTable, nRow )
+ {
+    var aData = oTable.fnGetData(nRow);
+    var selected = aData[1];
+    var jqTds = $('>td', nRow);
+
+    var options = '#{projectSelect()}';
+    jqTds[1].innerHTML = options;
+
+    //set the 'selectedIndex' of the dropdown so correct one is selected
+    var l = jqTds[1].childNodes[0].children.length;
+    for (i=0; i<l; i++) {
+      var t = jqTds[1].childNodes[0].children[i].innerHTML;
+      if (selected == t) {
+        jqTds[1].firstChild.selectedIndex = i;
+        break;
+      }
+    }
+
+    jqTds[2].innerHTML = '<input class="span2" type="text" value="'+aData[2]+'">';
+    jqTds[3].innerHTML = '<input class="span2" type="text" id="datepicker" value="'+aData[3]+'">';
+    jqTds[4].innerHTML = '<input class="span2" type="text" value="'+aData[4]+'">';
+    jqTds[5].innerHTML = '<input class="span2" type="text" value="'+aData[5]+'">';
+    jqTds[6].innerHTML = '<a class="edit" href="">Save</a>';
+
+    $("#datepicker").datepicker({dateFormat: 'yy-mm-dd'});
+ }
+
+ function saveRow ( oTable, nRow )
+ {
+    var projectName = $('select', nRow);
+    projectName = projectName[0].value;
+    var jqInputs = $('input', nRow);
+    oTable.fnUpdate( projectName, nRow, 1, false );
+    oTable.fnUpdate( jqInputs[0].value, nRow, 2, false );
+    oTable.fnUpdate( jqInputs[1].value, nRow, 3, false );
+    oTable.fnUpdate( jqInputs[2].value, nRow, 4, false );
+    oTable.fnUpdate( jqInputs[3].value, nRow, 5, false );
+    oTable.fnUpdate( '<a class="edit" href="">Edit</a>', nRow, 6, false );
+    oTable.fnDraw();
+
+    var taskdata = {task : {"project_name" : projectName, "task_name" : jqInputs[0].value, "performed_on": jqInputs[1].value, "hours" : jqInputs[2].value, "notes" : jqInputs[3].value}};
+
+    var id = nRow.getAttribute('id');  //row id (also in column 0)
+
+    $.ajax({
+       type: 'PUT',
+       url: 'tasks/' + id + '.json',
+       data : taskdata,
+     });
+
+ }
+
+ function restoreRow ( oTable, nRow )
+ {
+    var aData = oTable.fnGetData(nRow);
+    var jqTds = $('>td', nRow);
+    jqTds[1].innerHTML = aData[1];
+    jqTds[2].innerHTML = aData[2];
+    jqTds[3].innerHTML = aData[3];
+    jqTds[4].innerHTML = aData[4];
+    jqTds[5].innerHTML = aData[5];
+    jqTds[6].innerHTML = '<a class="edit" href="">Edit</a>';
+ }
+
+
+
+ function fnClickAddRow() {
+
+     var d = new Date();
+
+    var i =  $('#taskTable tbody tr:first')[0];
+    var lastRow = $('#taskTable').dataTable().fnGetData(i); //get data from row 0
+    var copyLast = $('#copy_last').prop('checked');
+    if (lastRow == null || copyLast == false) {
+        lastRow = new Array();
+        lastRow[1] = "";
+        lastRow[2] = "";
+        lastRow[3] = "";
+        lastRow[4] = "";
+    }
+
+
+      var testdata = {task : {"project_name" : lastRow[1], "task_name" : lastRow[2], "performed_on": d.toISOString(), "hours" : lastRow[4], "notes" : lastRow[5]}};
+
+      $.ajax({
+          type: 'POST',
+          url: 'tasks.json',
+          data : testdata,
+      });
+
+      window.location.reload(true);  //heavy-handed, but otherwise it's a big pain in the arse to get new row editable
+
+  }
+
+.page-header.jumbotron.subhead
+ %h1
+  Completed Tasks
+  %small for #{@user.name}
+
+
+.row
+ %form.form-inline
+  %button.btn.btn-primary#addNewButton Add New Task
+  %label.checkbox
+   %input{:type=>"checkbox", :id=>"copy_last", :checked=>true, :name=>"copy_last", :class=>"checkbox"}Copy Most Recent
+
+.row
+
+ %table.table.table-striped.table-bordered.table-condensed#taskTable
+  %thead
+   %tr
+    %th.hidden Task Id
+    %th.span2{:id=>"project_name"} Project name
+    %th.span2{:id=>"task_name"} Task name
+    %th.span2{:id=>"performed_on"} Completed on
+    %th.span2{:id=>"hours"} Hours
+    %th.span2{:id=>"notes"} Notes
+    %th{:id=>"edit"}
+    %th{:id=>"delete"}
+  %tbody
+   - @tasks.each do |task|
+    %tr{:id=>task.id}
+     %td.hidden= task.id
+     %td.span2= task.project == nil ? '' : task.project.name
+     %td.span2= task.task_name
+     %td.span2= task.performed_on
+     %td.span2= task.hours
+     %td.span2= task.notes
+     %td.edit <a class="edit" href="">Edit</a>
+     %td= link_to 'Delete', task, confirm: 'Are you sure?', method: :delete
+
+
+.result

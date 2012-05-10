@@ -1,0 +1,35 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>User:</b>
+  <%= @timesheet_entry.user_id %>
+</p>
+
+<p>
+  <b>Project name:</b>
+  <%= @timesheet_entry.project_name %>
+</p>
+
+<p>
+  <b>Task name:</b>
+  <%= @timesheet_entry.task_name %>
+</p>
+
+<p>
+  <b>Performed on:</b>
+  <%= @timesheet_entry.performed_on %>
+</p>
+
+<p>
+  <b>Hours:</b>
+  <%= @timesheet_entry.hours %>
+</p>
+
+<p>
+  <b>Notes:</b>
+  <%= @timesheet_entry.notes %>
+</p>
+
+
+<%= link_to 'Edit', edit_timesheet_entry_path(@timesheet_entry) %> |
+<%= link_to 'Back', timesheet_entries_path %>

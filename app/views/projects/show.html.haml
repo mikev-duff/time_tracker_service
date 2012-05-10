@@ -1,0 +1,145 @@
+:javascript
+ var oTable;
+ var nEditing = null;
+ $(document).ready( function() {
+
+ $.fn.dataTableExt.afnFiltering.push(
+     function( oSettings, aData, iDataIndex ) {
+         var iFini = document.getElementById('datepicker-start').value;
+         var iFfin = document.getElementById('datepicker-end').value;
+         var iStartDateCol = 2;
+         var iEndDateCol = 2;
+
+         iFini=iFini.substring(0,4) + iFini.substring(5,7)+ iFini.substring(8,10)
+         iFfin=iFfin.substring(0,4) + iFfin.substring(5,7)+ iFfin.substring(8,10)
+
+         var datofini=aData[iStartDateCol].substring(0,4) + aData[iStartDateCol].substring(5,7)+ aData[iStartDateCol].substring(8,10);
+         var datoffin=aData[iEndDateCol].substring(0,4) + aData[iEndDateCol].substring(5,7)+ aData[iEndDateCol].substring(8,10);
+
+         if ( iFini == "" && iFfin == "" )
+         {
+             return true;
+         }
+         else if ( iFini <= datofini && iFfin == "")
+         {
+             return true;
+         }
+         else if ( iFfin >= datoffin && iFini == "")
+         {
+             return true;
+         }
+         else if (iFini <= datofini && iFfin >= datoffin)
+         {
+             return true;
+         }
+         return false;
+     }
+ );
+
+    oTable = $('#taskTable').dataTable( {
+        "bPaginate": false,
+        "sDom": '<"clear">fTrti',
+        "aaSorting": [[ 2, "desc" ]],
+
+        "fnFooterCallback": function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
+            /*
+             * Calculate the total hours in this table (ie inc. outside
+             * the pagination)
+             */
+            var iTotalHours = 0;
+            for ( var i=0 ; i<aaData.length ; i++ )
+            {
+                iTotalHours += aaData[i][4]*1;
+            }
+
+            /* Calculate the total hours on this page */
+            var iPageHours = 0;
+            for ( var i=iStart ; i<iEnd ; i++ )
+            {
+                iPageHours += aaData[ aiDisplay[i] ][4]*1;
+            }
+
+            /* Modify the footer row to match what we want */
+            var nCells = nRow.getElementsByTagName('th');
+            nCells[3].innerHTML = 'Total Hours:'
+            nCells[4].innerHTML = iPageHours;
+        }
+
+    });
+
+    $( "#datepicker-start" ).datepicker ( {
+      dateFormat: 'yy-mm-dd',
+      "onSelect": function(date) {
+
+      oTable.fnDraw();
+      }
+       } ).keyup( function () {
+      oTable.fnDraw();
+     } );
+
+    $( "#datepicker-end" ).datepicker ( {
+      dateFormat: 'yy-mm-dd',
+      "onSelect": function(date) {
+
+      oTable.fnDraw();
+      }
+       } ).keyup( function () {
+      oTable.fnDraw();
+     } );
+
+ });
+
+.notice #{notice}
+
+.container-fluid
+ .row-fluid
+  .span2
+   .page-header.jumbotron.subhead
+    %h3
+     Date Filters
+     %p
+      %h4
+       %p start
+       %input.span8#datepicker-start
+       %p end
+       %input.span8#datepicker-end
+
+  .span10
+
+   .page-header.jumbotron.subhead
+    %h1
+     #{@project.name}
+     %small #{@project.notes}
+
+   %section#tasks
+    .page-header
+     %h2 Recorded Tasks for All Users
+
+    %p
+     %table.table.table-striped.table-bordered.table-condensed#taskTable
+      %thead
+       %tr
+        %th.span2{:id=>"project_name"} Employee
+        %th.span2{:id=>"task_name"} Task name
+        %th.span2{:id=>"performed_on"} Completed on
+        %th.span2{:id=>"notes"} Notes
+        %th.span2{:id=>"hours"} Hours
+      %tbody
+       - @tasks.each do |task|
+        %tr{:id=>task.id}
+         %td.span2= task.user == nil ? "" :  task.user.name
+         %td.span2= task.task_name
+         %td.span2= task.performed_on
+         %td.span2= task.notes
+         %td.span2= task.hours
+      %tfoot
+       %tr
+        %th.span2
+        %th.span2
+        %th.span2
+        %th.span2
+        %th.span2
+
+
+ .page-footer
+  = link_to 'Back to Projects', projects_path
