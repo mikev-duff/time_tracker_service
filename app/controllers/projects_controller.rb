@@ -85,7 +85,11 @@ class ProjectsController < ApplicationController
   end
 
   def admin_user
-    redirect_to(notadmin_path) unless current_user.admin?
+    if current_user == nil
+      render :text => "Please log in", :status => :unauthorized
+    else
+      redirect_to(notadmin_path) unless current_user.admin?
+    end
   end
 
 

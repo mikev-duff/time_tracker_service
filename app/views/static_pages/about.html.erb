@@ -1,6 +1,13 @@
 <% provide(:title, 'About Us') %>
 <h1>About</h1>
-<h2>
+<p>
     This is the Duff TimeCard app.  Employees can record their tasks and admins can generate reports based on this data.
     There are also REST API's to perform CRUD operations with JSON data, so it's possible to mine the data, and/or create alternate apps for your timecard entry pleasure.
-</h2>
+</p>
+<h1>Helpful Tips</h1>
+<p>
+Here's how you can access the data via various means:<br/>
+<ul>
+<li>Curl</li>
+Getting Project List:<br/>
+curl -u youremail@duffresearch.com:yourpassword https://timetrackerservice.herokuapp.com/projects.json -w "%{http_code}\n"
