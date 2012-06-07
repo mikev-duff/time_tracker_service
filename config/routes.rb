@@ -5,8 +5,8 @@ SampleApp::Application.routes.draw do
 
   resources :timesheet_entries
 
-  match '/timesheets' => 'timesheet_entries#all'
-  match 'users/:id/timesheets' => 'users#timesheets'
+  match '/tasks' => 'tasks#all'
+  match 'users/:id/tasks' => 'users#tasks'
   resources :users
   resources :sessions, only: [:new, :create, :destroy]
 

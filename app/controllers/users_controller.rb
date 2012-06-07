@@ -4,13 +4,13 @@ class UsersController < ApplicationController
   before_filter :admin_user,     only: [:index, :destroy]
 
   #shortcut for getting all timesheets for this user only
-  def timesheets
+  def tasks
     @user = User.find(params[:id])
-    @timesheet_entries = @user.timesheet_entries
+    @tasks = @user.tasks
 
     respond_to do |format|
-      format.html { render @timesheet_entries }  #todo: add view
-      format.json { render json: @timesheet_entries }
+      format.html { render @tasks }  #todo: add view
+      format.json { render json: @tasks }
     end
 
   end
@@ -49,7 +49,13 @@ class UsersController < ApplicationController
   end
 
   def index
-    @users = User.paginate(page: params[:page])
+    @users = User.all
+
+    respond_to do |format|
+      format.html # index.html.erb
+      format.json { render json: @users }
+    end
+
   end
 
   def destroy
