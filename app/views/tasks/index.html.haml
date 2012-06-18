@@ -58,10 +58,13 @@
     jqTds[2].innerHTML = '<input class="span2" type="text" value="'+aData[2]+'">';
     jqTds[3].innerHTML = '<input class="span2" type="text" id="datepicker" value="'+aData[3]+'">';
     jqTds[4].innerHTML = '<input class="span2" type="text" value="'+aData[4]+'">';
-    jqTds[5].innerHTML = '<input class="span2" type="text" value="'+aData[5]+'">';
+    jqTds[5].innerHTML = '<textarea class="notes" rows="5">'+aData[5];
     jqTds[6].innerHTML = '<a class="edit" href="">Save</a>';
 
     $("#datepicker").datepicker({dateFormat: 'yy-mm-dd'});
+    $(".notes" ).resizable({
+      handles: "se"
+    });
  }
 
  function saveRow ( oTable, nRow )
@@ -69,15 +72,17 @@
     var projectName = $('select', nRow);
     projectName = projectName[0].value;
     var jqInputs = $('input', nRow);
+    var notesInput = $('textarea', nRow);
+    var notes = notesInput.val();
     oTable.fnUpdate( projectName, nRow, 1, false );
     oTable.fnUpdate( jqInputs[0].value, nRow, 2, false );
     oTable.fnUpdate( jqInputs[1].value, nRow, 3, false );
     oTable.fnUpdate( jqInputs[2].value, nRow, 4, false );
-    oTable.fnUpdate( jqInputs[3].value, nRow, 5, false );
+    oTable.fnUpdate( notes, nRow, 5, false );
     oTable.fnUpdate( '<a class="edit" href="">Edit</a>', nRow, 6, false );
     oTable.fnDraw();
 
-    var taskdata = {task : {"project_name" : projectName, "task_name" : jqInputs[0].value, "performed_on": jqInputs[1].value, "hours" : jqInputs[2].value, "notes" : jqInputs[3].value}};
+    var taskdata = {task : {"project_name" : projectName, "task_name" : jqInputs[0].value, "performed_on": jqInputs[1].value, "hours" : jqInputs[2].value, "notes" : notes}};
 
     var id = nRow.getAttribute('id');  //row id (also in column 0)
 
@@ -153,7 +158,7 @@
     %th.span2{:id=>"task_name"} Task name
     %th.span2{:id=>"performed_on"} Completed on
     %th.span2{:id=>"hours"} Hours
-    %th.span2{:id=>"notes"} Notes
+    %th{:id=>"notes"} Notes
     %th{:id=>"edit"}
     %th{:id=>"delete"}
   %tbody
@@ -164,7 +169,7 @@
      %td.span2= task.task_name
      %td.span2= task.performed_on
      %td.span2= task.hours
-     %td.span2= task.notes
+     %td.span4= task.notes
      %td.edit <a class="edit" href="">Edit</a>
      %td= link_to 'Delete', task, confirm: 'Are you sure?', method: :delete
 
