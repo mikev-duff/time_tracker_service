@@ -130,10 +130,10 @@
           type: 'POST',
           url: 'tasks.json',
           data : testdata,
+          success: (function() {
+            window.location.reload(true);  //heavy-handed, but otherwise it's a big pain in the arse to get new row editable
+          }),
       });
-
-      window.location.reload(true);  //heavy-handed, but otherwise it's a big pain in the arse to get new row editable
-
   }
 
 .page-header.jumbotron.subhead
@@ -143,10 +143,8 @@
 
 
 .row
- %form.form-inline
-  %button.btn.btn-primary#addNewButton Add New Task
-  %label.checkbox
-   %input{:type=>"checkbox", :id=>"copy_last", :checked=>true, :name=>"copy_last", :class=>"checkbox"}Copy Most Recent
+ %button.btn.btn-primary#addNewButton Add New Task
+ %input{:type=>"checkbox", :id=>"copy_last", :checked=>true, :name=>"copy_last", :class=>"checkbox"}Copy Most Recent
 
 .row
 
